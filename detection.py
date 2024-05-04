@@ -6,8 +6,8 @@ net = cv2.dnn.readNet("yolov4.weights", "yolov4.cfg")
 with open("coco.names", "r") as f:
     classes = [line.strip() for line in f.readlines()]
 
-# Initialize counters for each class
-class_counts = {class_name: 0 for class_name in classes}
+# Initialize set to keep track of detected objects
+detected_objects = set()
 
 # Load video
 video_path = "video.mp4"
@@ -26,6 +26,7 @@ while True:
     # Set blob as input to the network
     net.setInput(blob)
 
+    # Get the indices of the output layers
     output_layer_indices = net.getUnconnectedOutLayers()
 
     # Get the names of the output layers
@@ -40,10 +41,13 @@ while True:
             class_id = np.argmax(scores)
             confidence = scores[class_id]
             if confidence > 0.5:
-                # Increment count for detected class
+                # Increment count for detected class if not already detected
                 class_name = classes[class_id]
-                class_counts[class_name] += 1
-
+                object_id = f"{class_name}_{int(detection[0])}"
+                if object_id not in detected_objects:
+                    detected_objects.add(object_id)
+                    print(f"{class_name} detected")
+                
     # Show the frame
     cv2.imshow("Frame", frame)
     if cv2.waitKey(1) & 0xFF == ord('q'):
@@ -52,8 +56,3 @@ while True:
 # Release resources
 cap.release()
 cv2.destroyAllWindows()
-
-# Print counts for each class
-for class_name, count in class_counts.items():
-    if count==0 : continue
-    else : print(f"{class_name}: {count}")
