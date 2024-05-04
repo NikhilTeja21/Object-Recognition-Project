@@ -11,7 +11,7 @@ class_counts = {class_name: 0 for class_name in classes}
 
 # Load video
 video_path = "video.mp4"
-cap = cv2.VideoCapture(video_path)
+cap = cv2.VideoCapture(0)
 
 while True:
     ret, frame = cap.read()
@@ -26,9 +26,11 @@ while True:
     # Set blob as input to the network
     net.setInput(blob)
 
-    # Perform forward pass
+    output_layer_indices = net.getUnconnectedOutLayers()
+
+    # Get the names of the output layers
     layer_names = net.getLayerNames()
-    output_layers = [layer_names[i[0] - 1] for i in net.getUnconnectedOutLayers()]
+    output_layers = [layer_names[i - 1] for i in output_layer_indices]
     outputs = net.forward(output_layers)
 
     # Process detections
@@ -53,4 +55,5 @@ cv2.destroyAllWindows()
 
 # Print counts for each class
 for class_name, count in class_counts.items():
-    print(f"{class_name}: {count}")
+    if count==0 : continue
+    else : print(f"{class_name}: {count}")
